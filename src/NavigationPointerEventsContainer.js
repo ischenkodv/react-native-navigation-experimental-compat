@@ -66,9 +66,6 @@ function create(
     constructor(props: Props, context: any) {
       super(props, context);
       this._pointerEvents = this._computePointerEvents();
-    }
-
-    UNSAFE_componentWillMount(): void {
       this._onPositionChange = this._onPositionChange.bind(this);
       this._onComponentRef = this._onComponentRef.bind(this);
     }
@@ -81,8 +78,10 @@ function create(
       this._positionListener && this._positionListener.remove();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps: Props): void {
-      this._bindPosition(nextProps);
+    componentDidUpdate(prevProps: Props): void {
+      if (prevProps !== this.props) {
+        this._bindPosition(this.props);
+      }
     }
 
     render(): React.Element<any>  {

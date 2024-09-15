@@ -98,9 +98,7 @@ class NavigationTransitioner extends React.Component<any, Props, State> {
     this._prevTransitionProps = null;
     this._transitionProps = buildTransitionProps(props, this.state);
     this._isMounted = false;
-  }
 
-  UNSAFE_componentWillMount(): void {
     this._onLayout = this._onLayout.bind(this);
     this._onTransitionEnd = this._onTransitionEnd.bind(this);
   }
@@ -113,78 +111,68 @@ class NavigationTransitioner extends React.Component<any, Props, State> {
     this._isMounted = false;
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
-    const nextScenes = NavigationScenesReducer(
-      this.state.scenes,
-      nextProps.navigationState,
-      this.props.navigationState
-    );
+  componentDidUpdate(prevProps: Props): void {
+    // Check if the navigationState prop has changed
+    if (prevProps.navigationState !== this.props.navigationState) {
+      const nextScenes = NavigationScenesReducer(
+        this.state.scenes,
+        this.props.navigationState,
+        prevProps.navigationState
+      );
 
-    if (nextScenes === this.state.scenes) {
-      return;
-    }
+      if (nextScenes === this.state.scenes) {
+        return;
+      }
 
-    const nextState = {
-      ...this.state,
-      scenes: nextScenes,
-    };
+      const nextState = {
+        ...this.state,
+        scenes: nextScenes,
+      };
 
-    const {
-      position,
-      progress,
-    } = nextState;
+      const { position, progress } = nextState;
 
-    progress.setValue(0);
+      // Reset progress
+      progress.setValue(0);
 
-    this._prevTransitionProps = this._transitionProps;
-    this._transitionProps = buildTransitionProps(nextProps, nextState);
+      this._prevTransitionProps = this._transitionProps;
+      this._transitionProps = buildTransitionProps(this.props, nextState);
 
-    // get the transition spec.
-    const transitionUserSpec = nextProps.configureTransition ?
-      nextProps.configureTransition(
-        this._transitionProps,
-        this._prevTransitionProps,
-      ) :
-      null;
+      // Get the transition spec
+      const transitionUserSpec = this.props.configureTransition
+        ? this.props.configureTransition(this._transitionProps, this._prevTransitionProps)
+        : null;
 
-    const transitionSpec = {
-      ...DefaultTransitionSpec,
-      ...transitionUserSpec,
-    };
+      const transitionSpec = {
+        ...DefaultTransitionSpec,
+        ...transitionUserSpec,
+      };
 
-    const {timing} = transitionSpec;
-    delete transitionSpec.timing;
+      const { timing } = transitionSpec;
+      delete transitionSpec.timing;
 
-    const animations = [
-      timing(
-        progress,
-        {
+      const animations = [
+        timing(progress, {
           ...transitionSpec,
           toValue: 1,
-        },
-      ),
-    ];
+        }),
+      ];
 
-    if (nextProps.navigationState.index !== this.props.navigationState.index) {
-      animations.push(
-        timing(
-          position,
-          {
+      if (this.props.navigationState.index !== prevProps.navigationState.index) {
+        animations.push(
+          timing(position, {
             ...transitionSpec,
-            toValue: nextProps.navigationState.index,
-          },
-        ),
-      );
-    }
+            toValue: this.props.navigationState.index,
+          })
+        );
+      }
 
-    // update scenes and play the transition
-    this.setState(nextState, () => {
-      nextProps.onTransitionStart && nextProps.onTransitionStart(
-        this._transitionProps,
-        this._prevTransitionProps,
-      );
-      Animated.parallel(animations).start(this._onTransitionEnd);
-    });
+      // Update state and play the transition
+      this.setState(nextState, () => {
+        this.props.onTransitionStart &&
+          this.props.onTransitionStart(this._transitionProps, this._prevTransitionProps);
+        Animated.parallel(animations).start(this._onTransitionEnd);
+      });
+    }
   }
 
   render(): React.Element<any> {
