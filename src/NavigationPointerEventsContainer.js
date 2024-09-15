@@ -66,7 +66,6 @@ function create(
     constructor(props: Props, context: any) {
       super(props, context);
       this._pointerEvents = this._computePointerEvents();
-      this._onPositionChange = this._onPositionChange.bind(this);
       this._onComponentRef = this._onComponentRef.bind(this);
     }
 
@@ -95,7 +94,7 @@ function create(
       );
     }
 
-    _onComponentRef(component: any): void {
+    _onComponentRef = (component: any): void => {
       this._component = component;
       if (component) {
         invariant(
@@ -113,7 +112,7 @@ function create(
       );
     }
 
-    _onPositionChange(): void {
+    _onPositionChange = (): void => {
       if (this._component) {
         const pointerEvents = this._computePointerEvents();
         if (this._pointerEvents !== pointerEvents) {

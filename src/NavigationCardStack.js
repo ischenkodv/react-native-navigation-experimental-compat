@@ -207,9 +207,6 @@ class NavigationCardStack extends React.Component<DefaultProps, Props, void> {
 
   constructor(props: Props, context: any) {
     super(props, context);
-
-    this._render = this._render.bind(this);
-    this._renderScene = this._renderScene.bind(this);
   }
 
 
@@ -242,7 +239,7 @@ class NavigationCardStack extends React.Component<DefaultProps, Props, void> {
     return animationConfig;
   }
 
-  _render(props: NavigationTransitionProps): React.Element<any> {
+  _render = (props: NavigationTransitionProps): React.Element<any> => {
     const {
       renderHeader,
     } = this.props;
@@ -267,7 +264,7 @@ class NavigationCardStack extends React.Component<DefaultProps, Props, void> {
     );
   }
 
-  _renderScene(props: NavigationSceneRendererProps): React.Element<any> {
+  _renderScene = (props: NavigationSceneRendererProps): React.Element<any> => {
     const isVertical = this.props.direction === 'vertical';
 
     const interpolator = this.props.cardStyleInterpolator || (isVertical ?
