@@ -222,21 +222,12 @@ class NavigationCardStack extends React.Component<DefaultProps, Props, void> {
   }
 
   _configureTransition = () => {
-    const isVertical = this.props.direction === 'vertical';
-    const animationConfig = {};
-    if (
-      !!NativeAnimatedModule
-
-      // Gestures do not work with the current iteration of native animation
-      // driving. When gestures are disabled, we can drive natively.
-      && !this.props.enableGestures
-
-      // Native animation support also depends on the transforms used:
-      && NavigationCardStackStyleInterpolator.canUseNativeDriver(isVertical)
-    ) {
-      animationConfig.useNativeDriver = true;
-    }
-    return animationConfig;
+    // Under Fabric on real devices, Animated.Value addListener callbacks fire
+    // unreliably with useNativeDriver:true, so the pointerEvents on inactive
+    // scenes never updates back to 'auto' after navigating back. This causes
+    // taps on the underlying scene (markers on the map) to be silently
+    // swallowed. Force JS-driven animations for transitions.
+    return {};
   }
 
   _render = (props: NavigationTransitionProps): React.Element<any> => {

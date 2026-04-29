@@ -111,8 +111,8 @@ function create(
       if (this._component) {
         const pointerEvents = this._computePointerEvents();
         if (this._pointerEvents !== pointerEvents) {
+          console.log('[NAV-DEBUG] pointerEvents:', this.props.scene.route.key, this._pointerEvents, '->', pointerEvents);
           this._pointerEvents = pointerEvents;
-          // setNativeProps is unavailable under Fabric — fall back to setState-driven re-render
           if (typeof this._component.setNativeProps === 'function') {
             this._component.setNativeProps({pointerEvents});
           } else {
