@@ -34,8 +34,6 @@
 const React = require('react');
 const NavigationAnimatedValueSubscription = require('./NavigationAnimatedValueSubscription');
 
-const invariant = require('fbjs/lib/invariant');
-
 import type  {
   NavigationSceneRendererProps,
 } from './NavigationTypeDefinition';
@@ -96,12 +94,9 @@ function create(
 
     _onComponentRef = (component: any): void => {
       this._component = component;
-      if (component) {
-        invariant(
-          typeof component.setNativeProps === 'function',
-          'component must implement method `setNativeProps`',
-        );
-      }
+      // Note: we used to invariant on typeof component.setNativeProps === 'function',
+      // but that crashes under Fabric where setNativeProps is not exposed.
+      // _onPositionChange now guards the call site and falls back to forceUpdate().
     }
 
     _bindPosition(props: NavigationSceneRendererProps): void {
@@ -116,8 +111,13 @@ function create(
       if (this._component) {
         const pointerEvents = this._computePointerEvents();
         if (this._pointerEvents !== pointerEvents) {
+          console.log('[NAV-DEBUG] pointerEvents:', this.props.scene.route.key, this._pointerEvents, '->', pointerEvents);
           this._pointerEvents = pointerEvents;
-          this._component.setNativeProps({pointerEvents});
+          if (typeof this._component.setNativeProps === 'function') {
+            this._component.setNativeProps({pointerEvents});
+          } else {
+            this.forceUpdate();
+          }
         }
       }
     }
